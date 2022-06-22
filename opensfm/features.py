@@ -116,6 +116,9 @@ def extract_features_sift(image, config):
         else:
             detector.setDouble("contrastThreshold", sift_peak_threshold)
         points = detector.detect(image)
+        img_kp = cv2.drawKeypoints(points, image)
+        cv2.imwrite('sift_keypoints.jpg', img_kp)
+        logger.debug('KEYPOINTS HAS BEEN DRAWNED!!!!!')
         logger.debug('Found {0} points in {1}s'.format(len(points), time.time() - t))
         if len(points) < config['feature_min_frames'] and sift_peak_threshold > 0.0001:
             sift_peak_threshold = (sift_peak_threshold * 2) / 3
@@ -123,7 +126,7 @@ def extract_features_sift(image, config):
         else:
             logger.debug('done')
             break
-    points, desc = descriptor.compute(image, points)
+    points, desc = descriptor.compute(image, points) #computes the descriptors from the keypoints found
     if config['feature_root']:
         desc = root_feature(desc)
     points = np.array([(i.pt[0], i.pt[1], i.size, i.angle) for i in points])
@@ -252,6 +255,12 @@ def extract_features_orb(image, config):
     logger.debug('Found {0} points in {1}s'.format(len(points), time.time() - t))
     return points, desc
 
+def extract_features_cnn(image, config):
+
+
+
+
+    return None
 
 def extract_features(color_image, config, mask=None):
     """Detect features in an image.
@@ -283,9 +292,11 @@ def extract_features(color_image, config, mask=None):
         points, desc = extract_features_hahog(image, config)
     elif feature_type == 'ORB':
         points, desc = extract_features_orb(image, config)
+    elif feature_type == 'CNN':
+        points, dest = extract_features_cnn(image, config)
     else:
         raise ValueError('Unknown feature type '
-                         '(must be SURF, SIFT, AKAZE, HAHOG or ORB)')
+                         '(must be SURF, SIFT, AKAZE, HAHOG or ORB or CNN)')
 
     xs = points[:, 0].round().astype(int)
     ys = points[:, 1].round().astype(int)
